@@ -49,10 +49,12 @@ try {
     TRIGGER_PHRASE = core.getInput('trigger-phrase'),
     TASK_COMMENT = core.getInput('task-comment'),
     PULL_REQUEST = github.context.payload.pull_request,
-    REGEX_STRING = `\\*\\*${TRIGGER_PHRASE}\\*\\* \\[(.*?)\\]\\(https:\\/\\/app.asana.com\\/(\\d+)\\/(?<project>\\d+)\\/(?<task>\\d+).*?\\)`,
-    REGEX = new RegExp(REGEX_STRING,'g');
-  core.info(`Regex: ${REGEX_STRING}`);
-  core.info(`pr body: ${PULL_REQUEST.body}`);
+    REGEX_STRING = `${TRIGGER_PHRASE}(?:\s*)https:\\/\\/app.asana.com\\/(\\d+)\\/(?<project>\\d+)\\/(?<task>\\d+)`,
+    REGEX = new RegExp(REGEX_STRING,'g'),
+    LINK_REQUIRED = core.getInput('link-required')
+  ;
+  core.debug(`Regex: ${REGEX_STRING}`);
+  core.debug(`pr body: ${PULL_REQUEST.body}`);
   let taskComment = null,
     targets = TARGETS? JSON.parse(TARGETS) : [],
     parseAsanaURL = null;
@@ -63,13 +65,22 @@ try {
   if (TASK_COMMENT) {
     taskComment = `${TASK_COMMENT} ${PULL_REQUEST.html_url}`;
   }
+
+  let foundAsanaTasks = [];
   while ((parseAsanaURL = REGEX.exec(PULL_REQUEST.body)) !== null) {
     let taskId = parseAsanaURL.groups.task;
     if (taskId) {
+      foundAsanaLink = true;
       asanaOperations(ASANA_PAT, targets, taskId, taskComment);
+      foundAsanaTasks.push(taskId);
     } else {
       core.info(`Invalid Asana task URL after the trigger phrase ${TRIGGER_PHRASE}`);
     }
+  }
+  if(foundAsanaLinks.length === 0 && LINK_REQUIRED){
+    core.setFailed('ASANA link not found!');
+  }else{
+    core.setOutput('asana tasks', foundAsanaTasks);
   }
 } catch (error) {
   core.error(error.message);
