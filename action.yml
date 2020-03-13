@@ -12,7 +12,11 @@ inputs:
     required: false
   trigger-phrase:
     description: 'Prefix before the task i.e ASANA TASK: https://app.asana.com/1/2/3'
-    required: true
+    required: false
+  link-required:
+    description: 'When set to true requires an asana link in the body'
+    required: false
+    default: false
 branding:
   icon: 'chevron-right'  
   color: 'gray-dark'
