@@ -22,13 +22,17 @@ This action integrates asana with github.
 
 **Optional** Prefix before the task i.e ASANA TASK: https://app.asana.com/1/2/3/.
 
-### `task-comment`
+### `text`
 
-**Optional** If any comment is provided, the action will add a comment to the specified asana task with the text & pull request link.
+**Required for `add-comment`** If any comment is provided, the action will add a comment to the specified asana task with the text.
+
+### `comment-id`
+
+**Required for `remove-comment`, Optional for `add-comment`** When provided in add-comment, gives a unique identifier that can later be used to delete the comment
 
 ### `targets`
 
-**Optional** JSON array of objects having project and section where to move current task. Move task only if it exists in target project. e.g 
+**Required for `move-section`** JSON array of objects having project and section where to move current task. Move task only if it exists in target project. e.g 
 ```yaml
 targets: '[{"project": "Backlog", "section": "Development Done"}, {"project": "Current Sprint", "section": "In Review"}]'
 ```
@@ -36,12 +40,12 @@ if you don't want to move task omit `targets`.
 
 ### `link-required`
 
-**Optional** When set to true will fail pull requests without an asana link
+**Required for `assert-link`** When set to true will fail pull requests without an asana link
 
 ## Example usage
 
 ```yaml
-name: Mark asana task as done
+name: Move a task to a different section
 
 on:
   pull_request:
@@ -51,17 +55,16 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: everphone-gmbh/github-asana-action@v3.0.0
+      - uses: everphone-gmbh/github-asana-action
         if: github.event.pull_request.merged
         with:
           asana-pat: ${{ secrets.ASANA_PAT }}
+          action: 'move-section'
           targets: '[{"project": "Engineering scrum", "section": "Done"}]'
-          link-required: false
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ```yaml
-name: Add asana link
+name: Add a comment
 
 on:
   pull_request:
@@ -71,12 +74,56 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: everphone-gmbh/github-asana-action@v3.0.0
+      - name: set pr number
+        run: echo "::set-env name=PR_NUMBER::$(echo -n "${GITHUB_REF}" | awk 'BEGIN { FS = "/" } ; { print $3 }')"
+      - uses: everphone-gmbh/github-asana-action
         with:
           asana-pat: ${{ secrets.ASANA_PAT }}
-          task-comment: 'View Pull Request Here: '
-          # if the branch is labeled or named a hotfix, skip this check
-          link-required: ${{ !contains(github.event.pull_request.labels.*.name, 'hotfix') && !startsWith(github.event.pull_request.title,'hotfix/') }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'add-comment'
+          comment-id: "#pr:${{env.PR_NUMBER}}"
+          text: 'View Pull Request: https://github.com/everphone-gmbh/frontend-symfony/pull/${{env.PR_NUMBER}}'
+          comment-id: 'release
+          is-pinned: true
+```
 
+```yaml
+name: Remove a comment
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set pr number
+        run: echo "::set-env name=PR_NUMBER::$(echo -n "${GITHUB_REF}" | awk 'BEGIN { FS = "/" } ; { print $3 }')"
+      - uses: everphone-gmbh/github-asana-action@5968eaa
+       if: github.event.pull_request.merged
+        with:
+          asana-pat: ${{ secrets.ASANA_PAT }}
+          action: 'remove-comment'
+          comment-id: "#pr:${{env.PR_NUMBER}}"
+```
+
+```yaml
+name: Validate asana link presence
+
+on:
+  pull_request:
+    # revalidate on label changes
+    types: [opened, edited, labeled, unlabeled]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: everphone-gmbh/github-asana-action
+        with:
+          asana-pat: ${{ secrets.ASANA_PAT }}
+          action: assert-link
+          # if the branch is labeled or hotfix, skip this check
+          link-required: ${{ !contains(github.event.pull_request.labels.*.name, 'hotfix') }}
+          github-token: ${{ github.token }}
 ```
