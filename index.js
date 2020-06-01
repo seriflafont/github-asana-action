@@ -1,4 +1,5 @@
 const core = require('@actions/core');
+require('./action');
 
 async function run() {
   try {
