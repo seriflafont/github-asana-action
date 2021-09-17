@@ -1,6 +1,18 @@
 name: 'Asana Github Actions'
 description: 'Asana Github Actions'
 inputs:
+  asana-cid:
+    description: 'client Id used for Oauth'
+    required: false
+  asana-cs:
+    description: 'client secret used for Oauth'
+    required: false
+  asana-red:
+    description: 'redirect used for Oauth'
+    required: false
+  asana-oauth:
+    description: 'should this use oauth authorization? defaults to false.'
+    required: false
   asana-pat:
     description: 'Asana Public Access Token.'
     required: true
@@ -33,7 +45,7 @@ inputs:
     description: 'Is the task complete'
     required: false
 branding:
-  icon: 'chevron-right'  
+  icon: 'chevron-right'
   color: 'gray-dark'
 runs:
   using: 'node12'
