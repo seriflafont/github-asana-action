@@ -55,6 +55,12 @@ async function buildClient(useOAuth, asanaPAT, clientId, clientSecret, redirect)
       defaultHeaders: { 'asana-enable': 'new-sections,string_ids' },
       logAsanaChangeWarnings: false
     }).useAccessToken(asanaPAT).authorize();
+  } else {
+    return asana.Client.create({
+      clientId: clientId,
+      clientSecret: clientSecret,
+      redirectUri: redirect
+    }).authorize();
   }
 }
 
