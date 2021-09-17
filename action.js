@@ -40,7 +40,7 @@ async function addComment(client, taskId, commentId, text, isPinned) {
   }
   try {
     const comment = await client.tasks.addComment(taskId, {
-      text: text,
+      html_text: text,
       is_pinned: isPinned,
     });
     return comment;
