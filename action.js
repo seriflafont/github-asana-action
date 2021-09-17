@@ -49,15 +49,21 @@ async function addComment(client, taskId, commentId, text, isPinned) {
   }
 }
 
-async function buildClient(asanaPAT) {
-  return asana.Client.create({
-    defaultHeaders: { 'asana-enable': 'new-sections,string_ids' },
-    logAsanaChangeWarnings: false
-  }).useAccessToken(asanaPAT).authorize();
+async function buildClient(useOAuth, asanaPAT, clientId, clientSecret, redirect) {
+  if (!useOAuth) {
+    return asana.Client.create({
+      defaultHeaders: { 'asana-enable': 'new-sections,string_ids' },
+      logAsanaChangeWarnings: false
+    }).useAccessToken(asanaPAT).authorize();
+  }
 }
 
 async function action() {
   const
+    USE_OAUTH2 = core.getInput('asana-oauth', {required: false}) || false,
+    ASANA_CLIENT_ID = core.getInput('asana-cid', {required: false}),
+    ASANA_CLIENT_SECRET = core.getInput('asana-cs', {required: false}),
+    ASANA_REDIRECT = core.getInput('asana-red', {required: false}),
     ASANA_PAT = core.getInput('asana-pat', {required: true}),
     ACTION = core.getInput('action', {required: true}),
     TRIGGER_PHRASE = core.getInput('trigger-phrase') || '',
@@ -68,7 +74,7 @@ async function action() {
 
   console.log('pull_request', PULL_REQUEST);
 
-  const client = await buildClient(ASANA_PAT);
+  const client = await buildClient(USE_OAUTH2, ASANA_PAT, ASANA_CLIENT_ID, ASANA_CLIENT_SECRET, ASANA_REDIRECT);
   if(client === null){
     throw new Error('client authorization failed');
   }
