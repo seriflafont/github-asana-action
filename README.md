@@ -1,4 +1,12 @@
 
+# Forked from https://github.com/everphone-gmbh/github-asana-action
+## resources:
+- https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request
+- https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#on
+- https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+- https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions
+
+
 # Github-Asana action
 
 This action integrates asana with github.
@@ -40,7 +48,7 @@ This action integrates asana with github.
 
 ### `targets`
 
-**Required for `move-section`** JSON array of objects having project and section where to move current task. Move task only if it exists in target project. e.g 
+**Required for `move-section`** JSON array of objects having project and section where to move current task. Move task only if it exists in target project. e.g
 ```yaml
 targets: '[{"project": "Backlog", "section": "Development Done"}, {"project": "Current Sprint", "section": "In Review"}]'
 ```
