@@ -73,7 +73,7 @@ async function action() {
     throw new Error('client authorization failed');
   }
 
-  console.info('looking in body', PULL_REQUEST.body, 'regex string', REGEX_STRING, 'regex', REGEX);
+  console.info('looking in body', PULL_REQUEST.body, 'regex string', REGEX_STRING, 'regex', REGEX, 'trigger phrase', TRIGGER_PHRASE);
   let foundAsanaTasks = [];
   while ((parseAsanaURL = REGEX.exec(PULL_REQUEST.body)) !== null) {
     const taskId = parseAsanaURL.groups.task;
